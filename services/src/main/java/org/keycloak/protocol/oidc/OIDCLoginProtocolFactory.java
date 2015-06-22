@@ -8,11 +8,7 @@ import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.AbstractLoginProtocolFactory;
 import org.keycloak.protocol.LoginProtocol;
-import org.keycloak.protocol.oidc.mappers.AddressMapper;
-import org.keycloak.protocol.oidc.mappers.FullNameMapper;
-import org.keycloak.protocol.oidc.mappers.OIDCAttributeMapperHelper;
-import org.keycloak.protocol.oidc.mappers.UserPropertyMapper;
-import org.keycloak.protocol.oidc.mappers.UserSessionNoteMapper;
+import org.keycloak.protocol.oidc.mappers.*;
 import org.keycloak.services.managers.AuthenticationManager;
 
 import java.util.ArrayList;
@@ -32,12 +28,14 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
     public static final String GIVEN_NAME = "given name";
     public static final String FAMILY_NAME = "family name";
     public static final String FULL_NAME = "full name";
+    public static final String ALL_ATTRIBUTES = "all attributes";
     public static final String USERNAME_CONSENT_TEXT = "${username}";
     public static final String EMAIL_CONSENT_TEXT = "${email}";
     public static final String EMAIL_VERIFIED_CONSENT_TEXT = "${emailVerified}";
     public static final String GIVEN_NAME_CONSENT_TEXT = "${givenName}";
     public static final String FAMILY_NAME_CONSENT_TEXT = "${familyName}";
     public static final String FULL_NAME_CONSENT_TEXT = "${fullName}";
+    public static final String ALL_ATTRIBUTES_CONSENT_TEXT = "${allAttributes}";
 
 
     @Override
@@ -93,6 +91,11 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
                 "emailVerified",
                 "email_verified", "boolean",
                 false, EMAIL_VERIFIED_CONSENT_TEXT,
+                true, true);
+        builtins.add(model);
+        model = AllAttributeMapper.createClaimMapper(ALL_ATTRIBUTES,
+                "organizations", "String",
+                false, ALL_ATTRIBUTES_CONSENT_TEXT,
                 true, true);
         builtins.add(model);
 

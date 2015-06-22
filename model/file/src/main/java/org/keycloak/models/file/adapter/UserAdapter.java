@@ -29,6 +29,7 @@ import org.keycloak.models.RoleModel;
 import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserCredentialValueModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.OrganizationModel;
 import org.keycloak.models.entities.CredentialEntity;
 import org.keycloak.models.entities.FederatedIdentityEntity;
 import org.keycloak.models.entities.RoleEntity;
@@ -479,6 +480,48 @@ public class UserAdapter implements UserModel, Comparable {
     public boolean revokeConsentForClient(String clientId) {
         // TODO
         return false;
+    }
+
+    @Override
+    public List<OrganizationModel> getOrganizations() {
+        List<OrganizationModel> orgs = new ArrayList<>();
+        for(String orgId : user.getOrganizationIds()) {
+            OrganizationModel org = realm.getOrganizationById(orgId);
+
+            if(org != null) {
+                orgs.add(org);
+            }
+        }
+
+        return orgs;
+    }
+
+    @Override
+    public boolean hasOrganization(OrganizationModel organization) {
+        return user.getOrganizationIds().contains(organization.getId());
+    }
+
+    @Override
+    public void addOrganization(OrganizationModel organization) {
+        if(!user.getOrganizationIds().contains(organization.getId())) {
+            user.getOrganizationIds().add(organization.getId());
+        }
+    }
+
+    @Override
+    public void removeOrganization(OrganizationModel organization) {
+        if(user.getOrganizationIds().contains(organization.getId())) {
+            user.getOrganizationIds().remove(organization.getId());
+        }
+    }
+
+    @Override
+    public void removeOrganizationByName(String name) {
+        OrganizationModel organization = realm.getOrganizationByName(name);
+
+        if(user.getOrganizationIds().contains(organization.getId())) {
+            user.getOrganizationIds().remove(organization.getId());
+        }
     }
 
     @Override

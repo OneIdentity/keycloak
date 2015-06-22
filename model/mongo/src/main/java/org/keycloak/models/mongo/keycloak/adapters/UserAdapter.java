@@ -17,6 +17,7 @@ import org.keycloak.models.RoleModel;
 import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserCredentialValueModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.OrganizationModel;
 import org.keycloak.models.entities.CredentialEntity;
 import org.keycloak.models.entities.UserConsentEntity;
 import org.keycloak.models.mongo.keycloak.entities.MongoRoleEntity;
@@ -535,6 +536,54 @@ public class UserAdapter extends AbstractMongoAdapter<MongoUserEntity> implement
         }
 
         return getMongoStore().removeEntity(entity, invocationContext);
+    }
+
+    @Override
+    public List<OrganizationModel> getOrganizations() {
+        List<OrganizationModel> orgs = new ArrayList<>();
+        for(String orgId : user.getOrganizationIds()) {
+            OrganizationModel org = realm.getOrganizationById(orgId);
+
+            if(org != null) {
+                orgs.add(org);
+            }
+        }
+
+        return orgs;
+    }
+
+    @Override
+    public boolean hasOrganization(OrganizationModel organization) {
+        return user.getOrganizationIds().contains(organization.getId());
+    }
+
+    @Override
+    public void addOrganization(OrganizationModel organization) {
+        if(!user.getOrganizationIds().contains(organization.getId())) {
+            user.getOrganizationIds().add(organization.getId());
+        }
+
+        updateUser();
+    }
+
+    @Override
+    public void removeOrganization(OrganizationModel organization) {
+        if(user.getOrganizationIds().contains(organization.getId())) {
+            user.getOrganizationIds().remove(organization.getId());
+        }
+
+        updateUser();
+    }
+
+    @Override
+    public void removeOrganizationByName(String name) {
+        OrganizationModel organization = realm.getOrganizationByName(name);
+
+        if(user.getOrganizationIds().contains(organization.getId())) {
+            user.getOrganizationIds().remove(organization.getId());
+        }
+
+        updateUser();
     }
 
     @Override

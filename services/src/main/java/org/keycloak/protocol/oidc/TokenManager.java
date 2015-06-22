@@ -8,16 +8,7 @@ import org.keycloak.events.EventBuilder;
 import org.keycloak.jose.jws.JWSBuilder;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.jose.jws.crypto.RSAProvider;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientSessionModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
-import org.keycloak.models.UserSessionProvider;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.oidc.mappers.OIDCAccessTokenMapper;
@@ -239,6 +230,12 @@ public class TokenManager {
         Set<RoleModel> requestedRoles = new HashSet<RoleModel>();
 
         Set<RoleModel> roleMappings = user.getRoleMappings();
+
+        //Add associated organization role mappings
+        for(OrganizationModel organization : user.getOrganizations()) {
+            roleMappings.addAll(organization.getRoleMappings());
+        }
+
         if (client.isFullScopeAllowed()) return roleMappings;
 
         Set<RoleModel> scopeMappings = client.getScopeMappings();

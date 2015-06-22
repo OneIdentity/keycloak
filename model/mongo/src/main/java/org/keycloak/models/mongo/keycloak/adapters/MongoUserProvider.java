@@ -16,6 +16,7 @@ import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserFederationProviderModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserProvider;
+import org.keycloak.models.OrganizationModel;
 import org.keycloak.models.entities.FederatedIdentityEntity;
 import org.keycloak.models.mongo.keycloak.entities.MongoUserConsentEntity;
 import org.keycloak.models.mongo.keycloak.entities.MongoUserEntity;
@@ -129,6 +130,17 @@ public class MongoUserProvider implements UserProvider {
     public List<UserModel> getUsers(RealmModel realm, int firstResult, int maxResults) {
         DBObject query = new QueryBuilder()
                 .and("realmId").is(realm.getId())
+                .get();
+        DBObject sort = new BasicDBObject("username", 1);
+        List<MongoUserEntity> users = getMongoStore().loadEntities(MongoUserEntity.class, query, sort, firstResult, maxResults, invocationContext);
+        return convertUserEntities(realm, users);
+    }
+
+    @Override
+    public List<UserModel> getUsersByOrganization(RealmModel realm, OrganizationModel organization, int firstResult, int maxResults) {
+        DBObject query = new QueryBuilder()
+                .and("realmId").is(realm.getId())
+                .and("organizationIds").is(organization.getId())
                 .get();
         DBObject sort = new BasicDBObject("username", 1);
         List<MongoUserEntity> users = getMongoStore().loadEntities(MongoUserEntity.class, query, sort, firstResult, maxResults, invocationContext);
@@ -389,6 +401,17 @@ public class MongoUserProvider implements UserProvider {
                 .get();
         pull = new BasicDBObject("$pull", query);
         getMongoStore().updateEntities(MongoUserConsentEntity.class, query, pull, invocationContext);
+    }
+
+    @Override
+    public void preRemove(OrganizationModel organization) {
+        DBObject query = new QueryBuilder().and("organizationIds").is(organization.getId()).get();
+
+        List<MongoUserEntity> userEntities = getMongoStore().loadEntities(MongoUserEntity.class, query, invocationContext);
+
+        for(MongoUserEntity userEntity : userEntities) {
+            getMongoStore().pullItemFromList(userEntity, "organizationIds", organization.getId(), invocationContext);
+        }
     }
 
     @Override

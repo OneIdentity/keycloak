@@ -28,6 +28,7 @@ public class UserRepresentation {
     protected List<String> realmRoles;
     protected Map<String, List<String>> clientRoles;
     protected List<UserConsentRepresentation> clientConsents;
+    protected List<String> organizations;
 
     @Deprecated
     protected Map<String, List<String>> applicationRoles;
@@ -196,5 +197,13 @@ public class UserRepresentation {
 
     public void setFederationLink(String federationLink) {
         this.federationLink = federationLink;
+    }
+
+    public List<String> getOrganizations() {
+        return organizations;
+    }
+
+    public void setOrganizations(List<String> organizations) {
+        this.organizations = organizations;
     }
 }

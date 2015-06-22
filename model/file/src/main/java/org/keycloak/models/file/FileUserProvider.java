@@ -30,6 +30,7 @@ import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserFederationProviderModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserProvider;
+import org.keycloak.models.OrganizationModel;
 import org.keycloak.models.entities.FederatedIdentityEntity;
 import org.keycloak.models.entities.UserEntity;
 import org.keycloak.models.file.adapter.UserAdapter;
@@ -39,6 +40,7 @@ import org.keycloak.models.utils.KeycloakModelUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -117,6 +119,24 @@ public class FileUserProvider implements UserProvider {
     @Override
     public List<UserModel> getUsers(RealmModel realm, int firstResult, int maxResults) {
         List users = new ArrayList(inMemoryModel.getUsers(realm.getId()));
+        List<UserModel> sortedList = sortedSubList(users, firstResult, maxResults);
+        return sortedList;
+    }
+
+    @Override
+    public List<UserModel> getUsersByOrganization(RealmModel realm, OrganizationModel organization, int firstResult, int maxResults) {
+        List<UserModel> users = new ArrayList(inMemoryModel.getUsers(realm.getId()));
+
+        Iterator<UserModel> i = users.iterator();
+        while(i.hasNext()) {
+            UserModel user = i.next();
+
+            //If the user isn't a member of this org remove them from the list
+            if(!user.hasOrganization(organization)) {
+                i.remove();
+            }
+        }
+
         List<UserModel> sortedList = sortedSubList(users, firstResult, maxResults);
         return sortedList;
     }
@@ -393,6 +413,11 @@ public class FileUserProvider implements UserProvider {
     @Override
     public void preRemove(ClientModel client, ProtocolMapperModel protocolMapper) {
         // TODO
+    }
+
+    @Override
+    public void preRemove(OrganizationModel organization) {
+        // TODO Is there anything that needs to be done here?
     }
 
     @Override

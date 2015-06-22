@@ -22,6 +22,7 @@ import org.keycloak.models.UserConsentModel;
 import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.OrganizationModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
@@ -228,6 +229,28 @@ public class UsersResource {
 
             for (String attr : attrsToRemove) {
                 user.removeAttribute(attr);
+            }
+        }
+
+        if(rep.getOrganizations() != null) {
+            List<OrganizationModel> orgToAdd = new ArrayList<>();
+            for(String orgName : rep.getOrganizations()) {
+                OrganizationModel org = realm.getOrganizationByName(orgName);
+
+                if(org != null) {
+                    orgToAdd.add(org);
+
+                    if (!user.getOrganizations().contains(org)) {
+                        user.addOrganization(org);
+                    }
+                }
+            }
+
+            Set<OrganizationModel> orgToRemove = new HashSet<>(user.getOrganizations());
+            orgToRemove.removeAll(orgToAdd);
+
+            for(OrganizationModel org : orgToRemove) {
+                user.removeOrganization(org);
             }
         }
     }
@@ -920,4 +943,13 @@ public class UsersResource {
         return clientSession;
     }
 
+    @Path("{id}/organizations")
+    public UserOrganizationsResource getUserOrganizationsResource(@PathParam("id") String id) {
+        UserModel user = session.users().getUserById(id, realm);
+        if (user == null) {
+            throw new NotFoundException("User not found");
+        }
+
+        return new UserOrganizationsResource(auth, realm, session, user);
+    }
 }

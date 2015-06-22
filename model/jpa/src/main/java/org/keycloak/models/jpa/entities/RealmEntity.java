@@ -160,7 +160,8 @@ public class RealmEntity {
     @OneToMany(cascade ={CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "realm")
     Collection<AuthenticationFlowEntity> authenticationFlows = new ArrayList<>();
 
-
+    @OneToMany(cascade ={CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "realm")
+    protected List<OrganizationEntity> organizations = new ArrayList<>();
 
     @Column(name="INTERNATIONALIZATION_ENABLED")
     protected boolean internationalizationEnabled;
@@ -519,6 +520,19 @@ public class RealmEntity {
     public void addIdentityProvider(IdentityProviderEntity entity) {
         entity.setRealm(this);
         getIdentityProviders().add(entity);
+    }
+
+    public List<OrganizationEntity> getOrganizations() {
+        return this.organizations;
+    }
+
+    public void setOrganizations(List<OrganizationEntity> organizations) {
+        this.organizations = organizations;
+    }
+
+    public void addOrganization(OrganizationEntity entity) {
+        entity.setRealm(this);
+        getOrganizations().add(entity);
     }
 
     public boolean isInternationalizationEnabled() {

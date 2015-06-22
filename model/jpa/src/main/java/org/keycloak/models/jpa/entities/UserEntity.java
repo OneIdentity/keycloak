@@ -71,6 +71,9 @@ public class UserEntity {
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy="user")
     protected Collection<CredentialEntity> credentials = new ArrayList<CredentialEntity>();
 
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy="user")
+    private Collection<UserOrganizationMappingEntity> organizations = new ArrayList<>();
+
     @Column(name="federation_link")
     protected String federationLink;
 
@@ -187,6 +190,14 @@ public class UserEntity {
         this.federationLink = federationLink;
     }
 
+    public Collection<UserOrganizationMappingEntity> getOrganizations() {
+        return organizations;
+    }
+
+    public void setOrganizations(Collection<UserOrganizationMappingEntity> organizations) {
+        this.organizations = organizations;
+    }
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

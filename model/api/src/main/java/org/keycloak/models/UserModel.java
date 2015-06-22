@@ -93,6 +93,13 @@ public interface UserModel {
     void updateConsent(UserConsentModel consent);
     boolean revokeConsentForClient(String clientInternalId);
 
+    List<OrganizationModel> getOrganizations();
+    boolean hasOrganization(OrganizationModel organization);
+    void addOrganization(OrganizationModel organization);
+    void removeOrganization(OrganizationModel organization);
+    void removeOrganizationByName(String name);
+
+
     public static enum RequiredAction {
         VERIFY_EMAIL, UPDATE_PROFILE, CONFIGURE_TOTP, UPDATE_PASSWORD
     }

@@ -9,6 +9,7 @@ import org.keycloak.models.RoleModel;
 import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserCredentialValueModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.OrganizationModel;
 import org.keycloak.models.cache.entities.CachedUser;
 
 import java.util.HashSet;
@@ -327,5 +328,35 @@ public class UserAdapter implements UserModel {
     public boolean revokeConsentForClient(String clientId) {
         getDelegateForUpdate();
         return updated.revokeConsentForClient(clientId);
+    }
+
+    @Override
+    public List<OrganizationModel> getOrganizations() {
+        getDelegateForUpdate();
+        return updated.getOrganizations();
+    }
+
+    @Override
+    public boolean hasOrganization(OrganizationModel organization) {
+        getDelegateForUpdate();
+        return updated.hasOrganization(organization);
+    }
+
+    @Override
+    public void addOrganization(OrganizationModel organization) {
+        getDelegateForUpdate();
+        updated.addOrganization(organization);
+    }
+
+    @Override
+    public void removeOrganization(OrganizationModel organization) {
+        getDelegateForUpdate();
+        updated.removeOrganization(organization);
+    }
+
+    @Override
+    public void removeOrganizationByName(String name) {
+        getDelegateForUpdate();
+        updated.removeOrganizationByName(name);
     }
 }

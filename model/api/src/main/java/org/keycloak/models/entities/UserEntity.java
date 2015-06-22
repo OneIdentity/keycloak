@@ -29,6 +29,9 @@ public class UserEntity extends AbstractIdentifiableEntity {
     private List<FederatedIdentityEntity> federatedIdentities;
     private String federationLink;
 
+    private List<String> organizationIds = new ArrayList<>();
+
+
     public String getUsername() {
         return username;
     }
@@ -139,6 +142,14 @@ public class UserEntity extends AbstractIdentifiableEntity {
 
     public void setFederationLink(String federationLink) {
         this.federationLink = federationLink;
+    }
+
+    public List<String> getOrganizationIds() {
+        return organizationIds;
+    }
+
+    public void setOrganizationIds(List<String> organizationIds) {
+        this.organizationIds = organizationIds;
     }
 }
 

@@ -11,8 +11,10 @@ import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserFederationProviderModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserProvider;
+import org.keycloak.models.OrganizationModel;
 import org.keycloak.models.jpa.entities.FederatedIdentityEntity;
 import org.keycloak.models.jpa.entities.UserEntity;
+import org.keycloak.models.jpa.entities.UserOrganizationMappingEntity;
 import org.keycloak.models.utils.CredentialValidation;
 import org.keycloak.models.utils.KeycloakModelUtils;
 
@@ -159,6 +161,8 @@ public class JpaUserProvider implements UserProvider {
                 .setParameter("realmId", realm.getId()).executeUpdate();
         num = em.createNamedQuery("deleteUserAttributesByRealm")
                 .setParameter("realmId", realm.getId()).executeUpdate();
+        num = em.createNamedQuery("deleteUserOrganizationMappingsByRealm")
+                .setParameter("realmId", realm.getId()).executeUpdate();
         num = em.createNamedQuery("deleteUsersByRealm")
                 .setParameter("realmId", realm.getId()).executeUpdate();
     }
@@ -182,6 +186,10 @@ public class JpaUserProvider implements UserProvider {
                 .setParameter("link", link.getId())
                 .executeUpdate();
         num = em.createNamedQuery("deleteUserAttributesByRealmAndLink")
+                .setParameter("realmId", realm.getId())
+                .setParameter("link", link.getId())
+                .executeUpdate();
+        num = em.createNamedQuery("deleteUserOrganizationMappingsByRealmAndLink")
                 .setParameter("realmId", realm.getId())
                 .setParameter("link", link.getId())
                 .executeUpdate();
@@ -209,6 +217,11 @@ public class JpaUserProvider implements UserProvider {
         em.createNamedQuery("deleteUserConsentProtMappersByProtocolMapper")
                 .setParameter("protocolMapperId", protocolMapper.getId())
                 .executeUpdate();
+    }
+
+    @Override
+    public void preRemove(OrganizationModel organization) {
+        em.createNamedQuery("deleteUserOrganizationMappingsByOrganization").setParameter("organizationId", organization.getId()).executeUpdate();
     }
 
     @Override
@@ -289,6 +302,27 @@ public class JpaUserProvider implements UserProvider {
         List<UserEntity> results = query.getResultList();
         List<UserModel> users = new ArrayList<UserModel>();
         for (UserEntity entity : results) users.add(new UserAdapter(realm, em, entity));
+        return users;
+    }
+
+    @Override
+    public List<UserModel> getUsersByOrganization(RealmModel realm, OrganizationModel organization, int firstResult, int maxResults) {
+        TypedQuery<UserOrganizationMappingEntity> query = em.createNamedQuery("getUsersByOrganization", UserOrganizationMappingEntity.class);
+        query.setParameter("organizationId", organization.getId());
+        if (firstResult != -1) {
+            query.setFirstResult(firstResult);
+        }
+        if (maxResults != -1) {
+            query.setMaxResults(maxResults);
+        }
+
+        List<UserOrganizationMappingEntity> userMappings = query.getResultList();
+
+        List<UserModel> users = new ArrayList<>();
+        for (UserOrganizationMappingEntity entity : userMappings) {
+            users.add(new UserAdapter(realm, em, entity.getUser()));
+        }
+
         return users;
     }
 

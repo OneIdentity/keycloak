@@ -12,6 +12,7 @@ import org.keycloak.models.RoleModel;
 import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserCredentialValueModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.OrganizationModel;
 import org.keycloak.models.jpa.entities.CredentialEntity;
 import org.keycloak.models.jpa.entities.UserConsentEntity;
 import org.keycloak.models.jpa.entities.UserConsentProtocolMapperEntity;
@@ -20,6 +21,7 @@ import org.keycloak.models.jpa.entities.UserAttributeEntity;
 import org.keycloak.models.jpa.entities.UserEntity;
 import org.keycloak.models.jpa.entities.UserRequiredActionEntity;
 import org.keycloak.models.jpa.entities.UserRoleMappingEntity;
+import org.keycloak.models.jpa.entities.UserOrganizationMappingEntity;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.Pbkdf2PasswordEncoder;
 import org.keycloak.util.Time;
@@ -557,6 +559,57 @@ public class UserAdapter implements UserModel {
         return true;
     }
 
+    @Override
+    public List<OrganizationModel> getOrganizations() {
+        List<OrganizationModel> orgs = new ArrayList<>();
+        for(UserOrganizationMappingEntity mappingEntity : user.getOrganizations()) {
+            OrganizationModel organizationModel = realm.getOrganizationById(mappingEntity.getOrganizationId());
+
+            if(organizationModel != null) {
+                orgs.add(organizationModel);
+            }
+        }
+
+        return orgs;
+    }
+
+    @Override
+    public boolean hasOrganization(OrganizationModel organization) {
+        TypedQuery<UserOrganizationMappingEntity> query = em.createNamedQuery("userHasOrganization", UserOrganizationMappingEntity.class);
+        query.setParameter("user", getUser());
+        query.setParameter("organizationId", organization.getId());
+        List<UserOrganizationMappingEntity> userMappings = query.getResultList();
+
+        return (userMappings != null && userMappings.size() > 0);
+    }
+
+    @Override
+    public void addOrganization(OrganizationModel organization) {
+        UserOrganizationMappingEntity mapping = new UserOrganizationMappingEntity();
+        mapping.setUser(user);
+        mapping.setOrganizationId(organization.getId());
+
+        user.getOrganizations().add(mapping);
+
+        em.persist(mapping);
+        em.flush();
+    }
+
+    @Override
+    public void removeOrganization(OrganizationModel organization) {
+        for(UserOrganizationMappingEntity entity : user.getOrganizations()) {
+            if(organization.getId().equals(entity.getOrganizationId())) {
+                em.remove(entity);
+                em.flush();
+            }
+        }
+    }
+
+    @Override
+    public void removeOrganizationByName(String name) {
+        OrganizationModel org = realm.getOrganizationByName(name);
+        removeOrganization(org);
+    }
 
     private UserConsentEntity getGrantedConsentEntity(String clientId) {
         TypedQuery<UserConsentEntity> query = em.createNamedQuery("userConsentByUserAndClient", UserConsentEntity.class);

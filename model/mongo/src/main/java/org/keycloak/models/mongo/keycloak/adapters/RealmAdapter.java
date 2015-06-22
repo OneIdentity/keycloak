@@ -11,6 +11,7 @@ import org.keycloak.models.AuthenticatorModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.IdentityProviderMapperModel;
 import org.keycloak.models.IdentityProviderModel;
+import org.keycloak.models.OrganizationModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.PasswordPolicy;
@@ -27,6 +28,7 @@ import org.keycloak.models.entities.AuthenticationFlowEntity;
 import org.keycloak.models.entities.AuthenticatorEntity;
 import org.keycloak.models.entities.IdentityProviderEntity;
 import org.keycloak.models.entities.IdentityProviderMapperEntity;
+import org.keycloak.models.entities.OrganizationEntity;
 import org.keycloak.models.entities.RequiredCredentialEntity;
 import org.keycloak.models.entities.UserFederationMapperEntity;
 import org.keycloak.models.entities.UserFederationProviderEntity;
@@ -837,6 +839,83 @@ public class RealmAdapter extends AbstractMongoAdapter<MongoRealmEntity> impleme
                 entity.setAddReadTokenRoleOnCreate(identityProvider.isAddReadTokenRoleOnCreate());
                 entity.setStoreToken(identityProvider.isStoreToken());
                 entity.setConfig(identityProvider.getConfig());
+            }
+        }
+
+        updateRealm();
+    }
+
+    @Override
+    public List<OrganizationModel> getOrganizations() {
+        List<OrganizationModel> organizations = new ArrayList<>();
+
+        for (OrganizationEntity entity: realm.getOrganizations()) {
+            organizations.add(entity.toModel(this));
+        }
+
+        return organizations;
+    }
+
+    @Override
+    public OrganizationModel getOrganizationByName(String name) {
+        for (OrganizationModel organizationModel : getOrganizations()) {
+            if (organizationModel.getName().equals(name)) {
+                return organizationModel;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public OrganizationModel getOrganizationById(String id) {
+        for (OrganizationModel organizationModel : getOrganizations()) {
+            if (organizationModel.getId().equals(id)) {
+                return organizationModel;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public void addOrganization(OrganizationModel organization) {
+        OrganizationEntity entity = OrganizationEntity.fromModel(organization);
+        entity.setId(KeycloakModelUtils.generateId());
+
+        realm.getOrganizations().add(entity);
+        updateRealm();
+    }
+
+    @Override
+    public void removeOrganizationByName(String name)  {
+        for (OrganizationEntity entity : realm.getOrganizations()) {
+            if (entity.getName().equals(name)) {
+                session.users().preRemove(entity.toModel(this));
+                realm.getOrganizations().remove(entity);
+                updateRealm();
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void removeOrganizationById(String id)  {
+        for (OrganizationEntity entity : realm.getOrganizations()) {
+            if (entity.getId().equals(id)) {
+                session.users().preRemove(entity.toModel(this));
+                realm.getOrganizations().remove(entity);
+                updateRealm();
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void updateOrganization(OrganizationModel organization){
+        for (OrganizationEntity entity : this.realm.getOrganizations()) {
+            if (entity.getId().equals(organization.getId())) {
+                entity.updateFromModel(organization);
             }
         }
 

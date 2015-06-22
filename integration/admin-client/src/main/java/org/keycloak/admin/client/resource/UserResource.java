@@ -81,4 +81,6 @@ public interface UserResource {
     @Path("role-mappings")
     public RoleMappingResource roles();
 
+    @Path("organizations")
+    public UserOrganizationsResource organizations();
 }

@@ -6,6 +6,7 @@ import org.keycloak.models.RoleModel;
 import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserCredentialValueModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.OrganizationModel;
 
 import java.util.List;
 import java.util.Map;
@@ -229,5 +230,30 @@ public class UserModelDelegate implements UserModel {
 
     public UserModel getDelegate() {
         return delegate;
+    }
+    
+    @Override
+    public List<OrganizationModel> getOrganizations() {
+        return delegate.getOrganizations();
+    }
+
+    @Override
+    public boolean hasOrganization(OrganizationModel organization) {
+        return delegate.hasOrganization(organization);
+    }
+
+    @Override
+    public void addOrganization(OrganizationModel organization) {
+        delegate.addOrganization(organization);
+    }
+
+    @Override
+    public void removeOrganizationByName(String name) {
+        delegate.removeOrganizationByName(name);
+    }
+
+    @Override
+    public void removeOrganization(OrganizationModel organization) {
+        delegate.removeOrganization(organization);
     }
 }

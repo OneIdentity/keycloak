@@ -35,15 +35,26 @@ public class AttributeStatementHelper {
         attributeStatement.addAttribute(new AttributeStatementType.ASTChoiceType(attribute));
     }
 
+    public static void addAttribute(AttributeStatementType attributeStatement, String attributeName, String friendlyName, String attributeType, String attributeValue) {
+        AttributeType attribute = AttributeStatementHelper.createAttributeType(attributeName, friendlyName, attributeType);
+        attribute.addAttributeValue(attributeValue);
+        attributeStatement.addAttribute(new AttributeStatementType.ASTChoiceType(attribute));
+    }
+
     public static AttributeType createAttributeType(ProtocolMapperModel mappingModel) {
         String attributeName = mappingModel.getConfig().get(SAML_ATTRIBUTE_NAME);
-        AttributeType attribute = new AttributeType(attributeName);
         String attributeType = mappingModel.getConfig().get(SAML_ATTRIBUTE_NAMEFORMAT);
+        String friendlyName = mappingModel.getConfig().get(FRIENDLY_NAME);
+
+        return createAttributeType(attributeName, friendlyName, attributeType);
+    }
+
+    public static AttributeType createAttributeType(String attributeName, String friendlyName, String attributeType) {
+        AttributeType attribute = new AttributeType(attributeName);
         String attributeNameFormat = JBossSAMLURIConstants.ATTRIBUTE_FORMAT_BASIC.get();
         if ("URI Reference".equals(attributeType)) attributeNameFormat = JBossSAMLURIConstants.ATTRIBUTE_FORMAT_URI.get();
         else if ("Unspecified".equals(attributeType)) attributeNameFormat = "urn:oasis:names:tc:SAML2.0:attrname-format:unspecified";
         attribute.setNameFormat(attributeNameFormat);
-        String friendlyName = mappingModel.getConfig().get(FRIENDLY_NAME);
         if (friendlyName != null && !friendlyName.trim().equals("")) attribute.setFriendlyName(friendlyName);
         return attribute;
     }

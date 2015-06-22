@@ -28,6 +28,7 @@ public interface UserProvider extends Provider {
     List<UserModel> getUsers(RealmModel realm);
     int getUsersCount(RealmModel realm);
     List<UserModel> getUsers(RealmModel realm, int firstResult, int maxResults);
+    List<UserModel> getUsersByOrganization(RealmModel realm, OrganizationModel organization, int firstResult, int maxResults);
     List<UserModel> searchForUser(String search, RealmModel realm);
     List<UserModel> searchForUser(String search, RealmModel realm, int firstResult, int maxResults);
     List<UserModel> searchForUserByAttributes(Map<String, String> attributes, RealmModel realm);
@@ -43,6 +44,7 @@ public interface UserProvider extends Provider {
 
     void preRemove(RealmModel realm, ClientModel client);
     void preRemove(ClientModel realm, ProtocolMapperModel protocolMapper);
+    void preRemove(OrganizationModel organization);
 
     boolean validCredentials(RealmModel realm, UserModel user, List<UserCredentialModel> input);
     boolean validCredentials(RealmModel realm, UserModel user, UserCredentialModel... input);

@@ -325,7 +325,7 @@ public class SamlBindingTest {
                             if (value.equals("el-jefe")) managerRole = true;
                             if (value.equals("user")) userRole = true;
                             if (value.equals("hardcoded-role")) hardcodedRole = true;
-                            if (value.equals("pee-on")) peeOn = true;
+                            if (value.equals("https://schemas.org/keycloak/saml/role/http://localhost:8081/employee//pee-on")) peeOn = true; //App roles are reformatted to a schema URI.
                         }
                     } else if (attr.getName().equals("hardcoded-attribute")) {
                         hardcodedAttribute = true;

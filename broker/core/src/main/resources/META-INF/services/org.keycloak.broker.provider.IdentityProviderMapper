@@ -1,1 +1,2 @@
 org.keycloak.broker.provider.HardcodedRoleMapper
+org.keycloak.broker.provider.UserOrganizationMapper

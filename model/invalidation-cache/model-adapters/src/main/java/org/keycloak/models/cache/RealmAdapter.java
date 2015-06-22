@@ -8,6 +8,7 @@ import org.keycloak.models.AuthenticatorModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.IdentityProviderMapperModel;
 import org.keycloak.models.IdentityProviderModel;
+import org.keycloak.models.OrganizationModel;
 import org.keycloak.models.PasswordPolicy;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RequiredCredentialModel;
@@ -606,6 +607,58 @@ public class RealmAdapter implements RealmModel {
     public void removeIdentityProviderByAlias(String alias) {
         getDelegateForUpdate();
         updated.removeIdentityProviderByAlias(alias);
+    }
+
+    @Override
+    public List<OrganizationModel> getOrganizations() {
+        if (updated != null) return updated.getOrganizations();
+        return cached.getOrganizations();
+    }
+
+    @Override
+    public OrganizationModel getOrganizationByName(String name) {
+        for (OrganizationModel organizationModel : getOrganizations()) {
+            if (organizationModel.getName().equals(name)) {
+                return organizationModel;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public OrganizationModel getOrganizationById(String id) {
+        for (OrganizationModel organizationModel : getOrganizations()) {
+            if (organizationModel.getId().equals(id)) {
+                return organizationModel;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public void addOrganization(OrganizationModel organization) {
+        getDelegateForUpdate();
+        updated.addOrganization(organization);
+    }
+
+    @Override
+    public void removeOrganizationByName(String name) {
+        getDelegateForUpdate();
+        updated.removeOrganizationByName(name);
+    }
+
+    @Override
+    public void removeOrganizationById(String id) {
+        getDelegateForUpdate();
+        updated.removeOrganizationById(id);
+    }
+
+    @Override
+    public void updateOrganization(OrganizationModel organization) {
+        getDelegateForUpdate();
+        updated.updateOrganization(organization);
     }
 
     @Override

@@ -10,6 +10,7 @@ import org.keycloak.models.ClientModel;
 import org.keycloak.models.FederatedIdentityModel;
 import org.keycloak.models.IdentityProviderMapperModel;
 import org.keycloak.models.IdentityProviderModel;
+import org.keycloak.models.OrganizationModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ModelException;
 import org.keycloak.models.PasswordPolicy;
@@ -29,6 +30,7 @@ import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.FederatedIdentityRepresentation;
 import org.keycloak.representations.idm.IdentityProviderMapperRepresentation;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
+import org.keycloak.representations.idm.OrganizationRepresentation;
 import org.keycloak.representations.idm.OAuthClientRepresentation;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
@@ -849,6 +851,16 @@ public class RepresentationToModel {
                 user.addConsent(consentModel);
             }
         }
+        if(userRep.getOrganizations() != null) {
+            for(String orgName : userRep.getOrganizations()) {
+                OrganizationModel org = newRealm.getOrganizationByName(orgName);
+
+                if(org != null) {
+                    user.getOrganizations().add(org);
+                }
+            }
+        }
+
         return user;
     }
 
@@ -996,6 +1008,54 @@ public class RepresentationToModel {
             }
         }
         return consentModel;
+    }
+
+    public static OrganizationModel toModel(RealmModel realm, OrganizationRepresentation rep) {
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setId(rep.getId());
+        organizationModel.setName(rep.getName());
+        organizationModel.setDescription(rep.getDescription());
+        organizationModel.setEnabled(rep.isEnabled());
+
+        if (rep.getAttributes() != null && !rep.getAttributes().isEmpty()) {
+            Map<String, String> attrs = new HashMap<>();
+            attrs.putAll(rep.getAttributes());
+            organizationModel.setAttributes(attrs);
+        }
+
+        if (rep.getRealmRoles() != null) {
+            for (String roleString : rep.getRealmRoles()) {
+                RoleModel role = realm.getRole(roleString.trim());
+                if (role == null) {
+                    //TODO: Do we want this?
+                    role = realm.addRole(roleString.trim());
+                }
+
+                organizationModel.grantRole(role);
+            }
+        }
+
+        if (rep.getClientRoles() != null) {
+            for (Map.Entry<String, List<String>> entry : rep.getClientRoles().entrySet()) {
+                ClientModel client = realm.getClientNameMap().get(entry.getKey());
+                if (client == null) {
+                    throw new RuntimeException("Unable to find client role mappings for client: " + entry.getKey());
+                }
+
+                //Add all app roles
+                for (String roleName : entry.getValue()) {
+                    RoleModel role = client.getRole(roleName.trim());
+                    if (role == null) {
+                        //TODO: Do we want this?
+                        role = client.addRole(roleName.trim());
+                    }
+
+                    organizationModel.grantRole(role);
+                }
+            }
+        }
+
+        return organizationModel;
     }
 
 }

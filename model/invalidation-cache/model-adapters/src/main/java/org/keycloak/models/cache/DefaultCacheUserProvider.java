@@ -12,6 +12,7 @@ import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserFederationProviderModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserProvider;
+import org.keycloak.models.OrganizationModel;
 import org.keycloak.models.cache.entities.CachedUser;
 
 import java.util.HashMap;
@@ -223,6 +224,11 @@ public class DefaultCacheUserProvider implements CacheUserProvider {
     }
 
     @Override
+    public List<UserModel> getUsersByOrganization(RealmModel realm, OrganizationModel organization, int firstResult, int maxResults) {
+        return getDelegate().getUsersByOrganization(realm, organization, firstResult, maxResults);
+    }
+
+    @Override
     public List<UserModel> searchForUser(String search, RealmModel realm) {
         return getDelegate().searchForUser(search, realm);
     }
@@ -328,5 +334,10 @@ public class DefaultCacheUserProvider implements CacheUserProvider {
     @Override
     public void preRemove(ClientModel client, ProtocolMapperModel protocolMapper) {
         getDelegate().preRemove(client, protocolMapper);
+    }
+
+    @Override
+    public void preRemove(OrganizationModel organization) {
+        getDelegate().preRemove(organization);
     }
 }

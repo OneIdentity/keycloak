@@ -11,6 +11,7 @@ import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserFederationProviderModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserProvider;
+import org.keycloak.models.OrganizationModel;
 
 import java.util.List;
 import java.util.Map;
@@ -86,6 +87,11 @@ public class NoCacheUserProvider implements CacheUserProvider {
     @Override
     public List<UserModel> getUsers(RealmModel realm, int firstResult, int maxResults) {
         return getDelegate().getUsers(realm, firstResult, maxResults);
+    }
+
+    @Override
+    public List<UserModel> getUsersByOrganization(RealmModel realm, OrganizationModel organization, int firstResult, int maxResults) {
+        return getDelegate().getUsersByOrganization(realm, organization, firstResult, maxResults);
     }
 
     @Override
@@ -186,5 +192,10 @@ public class NoCacheUserProvider implements CacheUserProvider {
     @Override
     public void preRemove(ClientModel client, ProtocolMapperModel protocolMapper) {
         getDelegate().preRemove(client, protocolMapper);
+    }
+
+    @Override
+    public void preRemove(OrganizationModel organization) {
+        getDelegate().preRemove(organization);
     }
 }

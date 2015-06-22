@@ -252,6 +252,17 @@ public class UserFederationManager implements UserProvider {
     }
 
     @Override
+    public List<UserModel> getUsersByOrganization(RealmModel realm, final OrganizationModel organization, int firstResult, int maxResults) {
+        return query(new PaginatedQuery() {
+            @Override
+            public List<UserModel> query(RealmModel realm, int first, int max) {
+                //Does this work when using org as a final??
+                return session.userStorage().getUsersByOrganization(realm, organization, first, max);
+            }
+        }, realm, firstResult, maxResults);
+    }
+
+    @Override
     public List<UserModel> searchForUser(String search, RealmModel realm) {
         return searchForUser(search, realm, 0, Integer.MAX_VALUE - 1);
     }
@@ -349,6 +360,11 @@ public class UserFederationManager implements UserProvider {
     @Override
     public void preRemove(ClientModel client, ProtocolMapperModel protocolMapper) {
         session.userStorage().preRemove(client, protocolMapper);
+    }
+
+    @Override
+    public void preRemove(OrganizationModel organization) {
+        session.userStorage().preRemove(organization);
     }
 
     public void updateCredential(RealmModel realm, UserModel user, UserCredentialModel credential) {

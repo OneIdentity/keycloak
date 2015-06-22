@@ -52,10 +52,9 @@ public class OIDCAttributeMapperHelper {
         return attributeValue;
     }
 
-    public static void mapClaim(IDToken token, ProtocolMapperModel mappingModel, Object attributeValue) {
+    public static void mapClaim(IDToken token, ProtocolMapperModel mappingModel, String protocolClaim, Object attributeValue) {
         if (attributeValue == null) return;
         attributeValue = mapAttributeValue(mappingModel, attributeValue);
-        String protocolClaim = mappingModel.getConfig().get(TOKEN_CLAIM_NAME);
         String[] split = protocolClaim.split("\\.");
         Map<String, Object> jsonObject = token.getOtherClaims();
         for (int i = 0; i < split.length; i++) {
@@ -70,6 +69,11 @@ public class OIDCAttributeMapperHelper {
                 }
             }
         }
+    }
+
+    public static void mapClaim(IDToken token, ProtocolMapperModel mappingModel, Object attributeValue) {
+        String protocolClaim = mappingModel.getConfig().get(TOKEN_CLAIM_NAME);
+        mapClaim(token, mappingModel, protocolClaim, attributeValue);
     }
 
     public static ProtocolMapperModel createClaimMapper(String name,

@@ -55,6 +55,7 @@ public class RealmEntity extends AbstractIdentifiableEntity {
     private List<UserFederationProviderEntity> userFederationProviders = new ArrayList<UserFederationProviderEntity>();
     private List<UserFederationMapperEntity> userFederationMappers = new ArrayList<UserFederationMapperEntity>();
     private List<IdentityProviderEntity> identityProviders = new ArrayList<IdentityProviderEntity>();
+    private List<OrganizationEntity> organizations = new ArrayList<>();
 
     private Map<String, String> browserSecurityHeaders = new HashMap<String, String>();
     private Map<String, String> smtpConfig = new HashMap<String, String>();
@@ -443,6 +444,14 @@ public class RealmEntity extends AbstractIdentifiableEntity {
 
     public void setIdentityProviders(List<IdentityProviderEntity> identityProviders) {
         this.identityProviders = identityProviders;
+    }
+
+    public List<OrganizationEntity> getOrganizations() {
+        return organizations;
+    }
+
+    public void setOrganizations(List<OrganizationEntity> organizations) {
+        this.organizations = organizations;
     }
 
     public String getCertificatePem() {

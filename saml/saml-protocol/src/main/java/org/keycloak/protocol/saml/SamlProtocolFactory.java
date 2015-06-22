@@ -8,6 +8,7 @@ import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.AbstractLoginProtocolFactory;
 import org.keycloak.protocol.LoginProtocol;
+import org.keycloak.protocol.saml.mappers.AllAttributeStatementMapper;
 import org.keycloak.protocol.saml.mappers.AttributeStatementHelper;
 import org.keycloak.protocol.saml.mappers.RoleListMapper;
 import org.keycloak.protocol.saml.mappers.UserPropertyAttributeStatementMapper;
@@ -80,6 +81,8 @@ public class SamlProtocolFactory extends AbstractLoginProtocolFactory {
                 JBossSAMLURIConstants.ATTRIBUTE_FORMAT_URI.get(),
                 X500SAMLProfileConstants.SURNAME.getFriendlyName(),
                 true, "${familyName}");
+        builtins.add(model);
+        model = AllAttributeStatementMapper.createAttributeMapper("All Attributes");
         builtins.add(model);
         model = RoleListMapper.create("role list", "Role", AttributeStatementHelper.BASIC, null, false);
         builtins.add(model);

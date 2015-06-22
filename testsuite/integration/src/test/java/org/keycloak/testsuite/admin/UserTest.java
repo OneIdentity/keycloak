@@ -9,15 +9,19 @@ import org.keycloak.representations.idm.FederatedIdentityRepresentation;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.keycloak.representations.idm.OrganizationRepresentation;
 
 import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -229,7 +233,7 @@ public class UserTest extends AbstractClientTest {
 
     private void removeSampleIdentityProvider() {
         IdentityProviderResource resource = realm.identityProviders().get("social-provider-id");
-        Assert.assertNotNull(resource);
+        assertNotNull(resource);
         resource.remove();
     }
 
@@ -484,4 +488,111 @@ public class UserTest extends AbstractClientTest {
         realm.update(rep);
     }
 
+    @Test
+    public void organizations() {
+        OrganizationRepresentation org1 = createExampleOrganization("Organization 1");
+        OrganizationRepresentation org2 = createExampleOrganization("Organization 2");
+
+        UserRepresentation rep = new UserRepresentation();
+        rep.setUsername("tuser");
+        rep.setFirstName("Test");
+        rep.setLastName("User");
+        rep.attribute("badge_number", "12345");
+
+        rep.setOrganizations(new ArrayList<String>());
+        rep.getOrganizations().add(org1.getName());
+
+        //Create and User with single org
+        Response response = realm.users().create(rep);
+        String userId = ApiUtil.getCreatedId(response);
+        response.close();
+
+        UserResource userResource = realm.users().get(userId);
+        rep = userResource.toRepresentation();
+        assertEquals(1, rep.getOrganizations().size());
+        assertEquals(org1.getName(), rep.getOrganizations().get(0));
+
+        //Add second org
+        rep.getOrganizations().add(org2.getName());
+        userResource.update(rep);
+        rep = userResource.toRepresentation();
+        assertEquals(2, rep.getOrganizations().size());
+        assertNames(rep.getOrganizations(), org1.getName(), org2.getName());
+
+        //remove org1
+        rep.getOrganizations().remove(org1.getName());
+        userResource.update(rep);
+        rep = userResource.toRepresentation();
+        assertEquals(1, rep.getOrganizations().size());
+        assertEquals(org2.getName(), rep.getOrganizations().get(0));
+
+        //Delete organization which should also delete org from user
+        realm.organizations().get(org2.getName()).remove();
+        rep = userResource.toRepresentation();
+        assertEquals(0, rep.getOrganizations().size());
+    }
+
+    @Test
+    public void organizationsResource() {
+        OrganizationRepresentation org1 = createExampleOrganization("Organization 1");
+        OrganizationRepresentation org2 = createExampleOrganization("Organization 2");
+
+        UserRepresentation rep = new UserRepresentation();
+        rep.setUsername("tuser");
+        rep.setFirstName("Test");
+        rep.setLastName("User");
+        rep.attribute("badge_number", "12345");
+
+        Response response = realm.users().create(rep);
+        String userId = ApiUtil.getCreatedId(response);
+        response.close();
+
+        UserResource userResource = realm.users().get(userId);
+
+        assertEquals(0, userResource.organizations().getAll().size());
+
+        //Test add
+        userResource.organizations().add(org1.getName());
+        assertEquals(1, userResource.organizations().getAll().size());
+        OrganizationRepresentation testRep = userResource.organizations().get(org1.getName());
+        assertNotNull(testRep);
+        assertEquals(org1.getId(), testRep.getId());
+
+        //test second add
+        userResource.organizations().add(org2.getName());
+        assertEquals(2, userResource.organizations().getAll().size());
+        testRep = userResource.organizations().get(org2.getName());
+        assertNotNull(testRep);
+        assertEquals(org2.getId(), testRep.getId());
+
+        //test remove
+        userResource.organizations().remove(org1.getName());
+        assertEquals(1, userResource.organizations().getAll().size());
+
+        //second one should still exist
+        testRep = userResource.organizations().get(org2.getName());
+        assertNotNull(testRep);
+        assertEquals(org2.getId(), testRep.getId());
+
+        try {
+            testRep = userResource.organizations().get(org1.getName());
+            fail(org1.getName() + " should no longer exist in the collection");
+        }
+        catch(NotFoundException ex) {
+            ;
+        }
+
+        userResource.organizations().remove(org2.getName());
+        assertEquals(0, userResource.organizations().getAll().size());
+    }
+
+    protected OrganizationRepresentation createExampleOrganization(String name) {
+        OrganizationRepresentation rep = new OrganizationRepresentation();
+        rep.setName(name);
+        rep.setDescription("Organization Description");
+
+        realm.organizations().create(rep);
+
+        return realm.organizations().get(rep.getName()).toRepresentation();
+    }
 }
