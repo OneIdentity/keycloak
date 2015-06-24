@@ -19,6 +19,7 @@ import org.keycloak.events.EventType;
 import org.keycloak.login.LoginFormsProvider;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientSessionModel;
+import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserSessionModel;
@@ -30,6 +31,7 @@ import org.keycloak.saml.common.exceptions.ConfigurationException;
 import org.keycloak.saml.common.exceptions.ProcessingException;
 import org.keycloak.saml.processing.core.saml.v2.common.SAMLDocumentHolder;
 import org.keycloak.services.ErrorPage;
+import org.keycloak.services.Urls;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.managers.ClientSessionCode;
 import org.keycloak.services.managers.HttpAuthenticationManager;
@@ -57,6 +59,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.security.PublicKey;
+import java.util.List;
 
 /**
  * Resource class for the oauth/openid connect token service
@@ -290,8 +293,16 @@ public class SamlService {
             HttpAuthenticationManager.HttpAuthOutput httpAuthOutput = httpAuthManager.spnegoAuthenticate(headers);
             if (httpAuthOutput.getResponse() != null) return httpAuthOutput.getResponse();
 
+            String accessCode = new ClientSessionCode(realm, clientSession).getCode();
+            List<IdentityProviderModel> identityProviders = realm.getIdentityProviders();
+            for (IdentityProviderModel identityProvider : identityProviders) {
+                if (identityProvider.isAuthenticateByDefault()) {
+                    return buildRedirectToIdentityProvider(identityProvider.getAlias(), accessCode);
+                }
+            }
+
             LoginFormsProvider forms = session.getProvider(LoginFormsProvider.class)
-                    .setClientSessionCode(new ClientSessionCode(realm, clientSession).getCode());
+                    .setClientSessionCode(accessCode);
 
             // Attach state from SPNEGO authentication
             if (httpAuthOutput.getChallenge() != null) {
@@ -309,6 +320,13 @@ public class SamlService {
             }
 
             return forms.createLogin();
+        }
+
+        private Response buildRedirectToIdentityProvider(String providerId, String accessCode) {
+            logger.debug("Automatically redirect to identity provider: " + providerId);
+            return Response.temporaryRedirect(
+                    Urls.identityProviderAuthnRequest(uriInfo.getBaseUri(), providerId, realm.getName(), accessCode))
+                    .build();
         }
 
         private String getBindingType(AuthnRequestType requestAbstractType) {
