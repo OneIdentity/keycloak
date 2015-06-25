@@ -16,6 +16,7 @@ public class AllAttributeMapper extends AbstractOIDCProtocolMapper implements OI
 
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
     private static final String ORGANIZATION_ATTRIBUTE_URI_FORMAT = "%s.%s.%s";
+    private static final String ORGANIZATION_ATTRIBUTE_ID = "id";
 
     static {
         OIDCAttributeMapperHelper.addAttributeConfig(configProperties);
@@ -66,12 +67,17 @@ public class AllAttributeMapper extends AbstractOIDCProtocolMapper implements OI
 
         String attributePrefix = mappingModel.getConfig().get(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME);
         if(attributePrefix == null || attributePrefix.isEmpty()) {
-            attributePrefix = "organization";
+            attributePrefix = "organizations";
         }
 
         for(OrganizationModel org : user.getOrganizations()) {
+            //Add organization ID that this user is associated with
+            String attributeName = String.format(ORGANIZATION_ATTRIBUTE_URI_FORMAT, attributePrefix, org.getName(), ORGANIZATION_ATTRIBUTE_ID);
+            OIDCAttributeMapperHelper.mapClaim(token, mappingModel, attributeName, org.getId());
+
+            //Add any additional attributes from this organization
             for (Map.Entry<String, String> attribute : org.getAttributes().entrySet()) {
-                String attributeName = String.format(ORGANIZATION_ATTRIBUTE_URI_FORMAT, attributePrefix, org.getName(), attribute.getKey());
+                attributeName = String.format(ORGANIZATION_ATTRIBUTE_URI_FORMAT, attributePrefix, org.getName(), attribute.getKey());
                 OIDCAttributeMapperHelper.mapClaim(token, mappingModel, attributeName, attribute.getValue());
             }
         }

@@ -12,13 +12,18 @@ import java.util.Map;
 
 public class AllAttributeStatementMapper extends AbstractSAMLProtocolMapper implements SAMLAttributeStatementMapper {
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
-    private static final String ORGANIZATION_ATTRIBUTE_URI_FORMAT = "https://schemas.org/keycloak/saml/attribute/%s/%s";
+    private static final String ORGANIZATION_ATTRIBUTE_URI_FORMAT = "https://schemas.org/keycloak/saml/attribute/organizations/%s/%s";
+    private static final String ORGANIZATION_ATTRIBUTE_ID = "id";
+
     public static final String PROVIDER_ID = "saml-all-attribute-mapper";
 
 
     public List<ProviderConfigProperty> getConfigProperties() {
         return configProperties;
     }
+
+
+
     @Override
     public String getId() {
         return PROVIDER_ID;
@@ -48,8 +53,13 @@ public class AllAttributeStatementMapper extends AbstractSAMLProtocolMapper impl
         }
 
         for(OrganizationModel org : user.getOrganizations()) {
+            //Add organization ID that this user is associated with
+            String attributeName = String.format(ORGANIZATION_ATTRIBUTE_URI_FORMAT, org.getName(), ORGANIZATION_ATTRIBUTE_ID);
+            AttributeStatementHelper.addAttribute(attributeStatement, attributeName, null, AttributeStatementHelper.BASIC, org.getId());
+
+            //Add any additional attributes from this organization
             for(Map.Entry<String, String> attribute : org.getAttributes().entrySet()) {
-                String attributeName = String.format(ORGANIZATION_ATTRIBUTE_URI_FORMAT, org.getName(), attribute.getKey());
+                attributeName = String.format(ORGANIZATION_ATTRIBUTE_URI_FORMAT, org.getName(), attribute.getKey());
                 AttributeStatementHelper.addAttribute(attributeStatement, attributeName, null, AttributeStatementHelper.BASIC, attribute.getValue());
             }
         }
