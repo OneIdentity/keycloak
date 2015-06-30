@@ -1,5 +1,4 @@
 org.keycloak.protocol.oidc.mappers.UserAttributeMapper
-org.keycloak.protocol.oidc.mappers.OrganizationAttributeMapper
 org.keycloak.protocol.oidc.mappers.AllAttributeMapper
 org.keycloak.protocol.oidc.mappers.FullNameMapper
 org.keycloak.protocol.oidc.mappers.UserPropertyMapper

@@ -3,7 +3,6 @@ org.keycloak.protocol.saml.mappers.RoleNameMapper
 org.keycloak.protocol.saml.mappers.HardcodedRole
 org.keycloak.protocol.saml.mappers.HardcodedAttributeMapper
 org.keycloak.protocol.saml.mappers.UserAttributeStatementMapper
-org.keycloak.protocol.saml.mappers.OrganizationAttributeStatementMapper
 org.keycloak.protocol.saml.mappers.AllAttributeStatementMapper
 org.keycloak.protocol.saml.mappers.UserPropertyAttributeStatementMapper
 
