@@ -96,6 +96,7 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
         model = AllAttributeMapper.createClaimMapper(ALL_ATTRIBUTES,
                 "organizations", "String",
                 false, ALL_ATTRIBUTES_CONSENT_TEXT,
+                true, true,
                 true, true);
         builtins.add(model);
 

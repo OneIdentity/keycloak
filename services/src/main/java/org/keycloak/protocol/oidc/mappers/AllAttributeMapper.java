@@ -18,8 +18,36 @@ public class AllAttributeMapper extends AbstractOIDCProtocolMapper implements OI
     private static final String ORGANIZATION_ATTRIBUTE_URI_FORMAT = "%s.%s.%s";
     private static final String ORGANIZATION_ATTRIBUTE_ID = "id";
 
+    private static final String MAP_USER_ATTRIBUTES_NAME = "map.user";
+    private static final String MAP_USER_ATTRIBUTES_LABEL = "Map User Attributes";
+    private static final String MAP_ORG_ATTRIBUTES_NAME = "map.organization";
+    private static final String MAP_ORG_ATTRIBUTES_LABEL = "Map Organization Attributes";
+
     static {
         OIDCAttributeMapperHelper.addAttributeConfig(configProperties);
+        for(ProviderConfigProperty prop : configProperties) {
+            if(prop.getName().compareTo(OIDCAttributeMapperHelper.JSON_TYPE) == 0) {
+                configProperties.remove(prop);
+                break;
+            }
+        }
+
+        ProviderConfigProperty property;
+        property = new ProviderConfigProperty();
+        property.setName(MAP_USER_ATTRIBUTES_NAME);
+        property.setLabel(MAP_USER_ATTRIBUTES_LABEL);
+        property.setType(ProviderConfigProperty.BOOLEAN_TYPE);
+        property.setHelpText("Should the user attributes be added to the token?");
+        property.setDefaultValue(true);
+        configProperties.add(property);
+
+        property = new ProviderConfigProperty();
+        property.setName(MAP_ORG_ATTRIBUTES_NAME);
+        property.setLabel(MAP_ORG_ATTRIBUTES_LABEL);
+        property.setType(ProviderConfigProperty.BOOLEAN_TYPE);
+        property.setHelpText("Should the users organization attributes be added to the token?");
+        property.setDefaultValue(true);
+        configProperties.add(property);
     }
 
     public static final String PROVIDER_ID = "oidc-all-attribute-mapper";
@@ -61,24 +89,28 @@ public class AllAttributeMapper extends AbstractOIDCProtocolMapper implements OI
     protected void setClaim(IDToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession) {
         UserModel user = userSession.getUser();
 
-        for(Map.Entry<String, String> attribute : user.getAttributes().entrySet()) {
-            OIDCAttributeMapperHelper.mapClaim(token, mappingModel, attribute.getKey(), attribute.getValue());
+        if(Boolean.parseBoolean(mappingModel.getConfig().get(MAP_USER_ATTRIBUTES_NAME))) {
+            for (Map.Entry<String, String> attribute : user.getAttributes().entrySet()) {
+                OIDCAttributeMapperHelper.mapClaim(token, mappingModel, attribute.getKey(), attribute.getValue());
+            }
         }
 
-        String attributePrefix = mappingModel.getConfig().get(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME);
-        if(attributePrefix == null || attributePrefix.isEmpty()) {
-            attributePrefix = "organizations";
-        }
+        if(Boolean.parseBoolean(mappingModel.getConfig().get(MAP_ORG_ATTRIBUTES_NAME))) {
+            String attributePrefix = mappingModel.getConfig().get(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME);
+            if (attributePrefix == null || attributePrefix.isEmpty()) {
+                attributePrefix = "organizations";
+            }
 
-        for(OrganizationModel org : user.getOrganizations()) {
-            //Add organization ID that this user is associated with
-            String attributeName = String.format(ORGANIZATION_ATTRIBUTE_URI_FORMAT, attributePrefix, org.getName(), ORGANIZATION_ATTRIBUTE_ID);
-            OIDCAttributeMapperHelper.mapClaim(token, mappingModel, attributeName, org.getId());
+            for (OrganizationModel org : user.getOrganizations()) {
+                //Add organization ID that this user is associated with
+                String attributeName = String.format(ORGANIZATION_ATTRIBUTE_URI_FORMAT, attributePrefix, org.getName(), ORGANIZATION_ATTRIBUTE_ID);
+                OIDCAttributeMapperHelper.mapClaim(token, mappingModel, attributeName, org.getId());
 
-            //Add any additional attributes from this organization
-            for (Map.Entry<String, String> attribute : org.getAttributes().entrySet()) {
-                attributeName = String.format(ORGANIZATION_ATTRIBUTE_URI_FORMAT, attributePrefix, org.getName(), attribute.getKey());
-                OIDCAttributeMapperHelper.mapClaim(token, mappingModel, attributeName, attribute.getValue());
+                //Add any additional attributes from this organization
+                for (Map.Entry<String, String> attribute : org.getAttributes().entrySet()) {
+                    attributeName = String.format(ORGANIZATION_ATTRIBUTE_URI_FORMAT, attributePrefix, org.getName(), attribute.getKey());
+                    OIDCAttributeMapperHelper.mapClaim(token, mappingModel, attributeName, attribute.getValue());
+                }
             }
         }
     }
@@ -93,11 +125,17 @@ public class AllAttributeMapper extends AbstractOIDCProtocolMapper implements OI
     public static ProtocolMapperModel createClaimMapper(String name,
                                                         String tokenClaimName, String claimType,
                                                         boolean consentRequired, String consentText,
+                                                        boolean mapUserAttributes, boolean mapOrganizationAttributes,
                                                         boolean accessToken, boolean idToken) {
-        return OIDCAttributeMapperHelper.createClaimMapper(name, null,
-                tokenClaimName, claimType,
-                consentRequired, consentText,
-                accessToken, idToken,
-                PROVIDER_ID);
+        ProtocolMapperModel mapper = OIDCAttributeMapperHelper.createClaimMapper(name, null,
+                                        tokenClaimName, claimType,
+                                        consentRequired, consentText,
+                                        accessToken, idToken,
+                                        PROVIDER_ID);
+
+        if (mapUserAttributes) mapper.getConfig().put(MAP_USER_ATTRIBUTES_NAME, "true");
+        if (mapOrganizationAttributes) mapper.getConfig().put(MAP_ORG_ATTRIBUTES_NAME, "true");
+
+        return mapper;
     }
 }
