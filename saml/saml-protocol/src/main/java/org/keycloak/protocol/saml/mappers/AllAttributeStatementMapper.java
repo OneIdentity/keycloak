@@ -1,5 +1,6 @@
 package org.keycloak.protocol.saml.mappers;
 
+import org.jboss.logging.Logger;
 import org.keycloak.models.*;
 import org.keycloak.dom.saml.v2.assertion.AttributeStatementType;
 import org.keycloak.protocol.saml.SamlProtocol;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public class AllAttributeStatementMapper extends AbstractSAMLProtocolMapper implements SAMLAttributeStatementMapper {
+    protected static final Logger logger = Logger.getLogger(AllAttributeStatementMapper.class);
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
     private static final String ORGANIZATION_ATTRIBUTE_URI_FORMAT = "https://schemas.org/keycloak/saml/attribute/%s/%s/%s";
     private static final String ORGANIZATION_ATTRIBUTE_ID = "id";
@@ -93,14 +95,19 @@ public class AllAttributeStatementMapper extends AbstractSAMLProtocolMapper impl
             }
 
             for (OrganizationModel org : user.getOrganizations()) {
-                //Add organization ID that this user is associated with
-                String attributeName = String.format(ORGANIZATION_ATTRIBUTE_URI_FORMAT, attributePrefix, org.getName(), ORGANIZATION_ATTRIBUTE_ID);
-                AttributeStatementHelper.addAttribute(attributeStatement, attributeName, null, AttributeStatementHelper.BASIC, org.getId());
+                if(org.isEnabled()) {
+                    //Add organization ID that this user is associated with
+                    String attributeName = String.format(ORGANIZATION_ATTRIBUTE_URI_FORMAT, attributePrefix, org.getName(), ORGANIZATION_ATTRIBUTE_ID);
+                    AttributeStatementHelper.addAttribute(attributeStatement, attributeName, null, AttributeStatementHelper.BASIC, org.getId());
 
-                //Add any additional attributes from this organization
-                for (Map.Entry<String, String> attribute : org.getAttributes().entrySet()) {
-                    attributeName = String.format(ORGANIZATION_ATTRIBUTE_URI_FORMAT, attributePrefix, org.getName(), attribute.getKey());
-                    AttributeStatementHelper.addAttribute(attributeStatement, attributeName, null, AttributeStatementHelper.BASIC, attribute.getValue());
+                    //Add any additional attributes from this organization
+                    for (Map.Entry<String, String> attribute : org.getAttributes().entrySet()) {
+                        attributeName = String.format(ORGANIZATION_ATTRIBUTE_URI_FORMAT, attributePrefix, org.getName(), attribute.getKey());
+                        AttributeStatementHelper.addAttribute(attributeStatement, attributeName, null, AttributeStatementHelper.BASIC, attribute.getValue());
+                    }
+                }
+                else {
+                    logger.debugf("Skipping organization %s as it is currently disabled", org.getName());
                 }
             }
         }

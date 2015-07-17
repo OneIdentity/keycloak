@@ -1,5 +1,6 @@
 package org.keycloak.protocol.oidc.mappers;
 
+import org.jboss.logging.Logger;
 import org.keycloak.models.*;
 import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 public class AllAttributeMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper {
+    protected static final Logger logger = Logger.getLogger(AllAttributeMapper.class);
 
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
     private static final String ORGANIZATION_ATTRIBUTE_URI_FORMAT = "%s.%s.%s";
@@ -102,14 +104,19 @@ public class AllAttributeMapper extends AbstractOIDCProtocolMapper implements OI
             }
 
             for (OrganizationModel org : user.getOrganizations()) {
-                //Add organization ID that this user is associated with
-                String attributeName = String.format(ORGANIZATION_ATTRIBUTE_URI_FORMAT, attributePrefix, org.getName(), ORGANIZATION_ATTRIBUTE_ID);
-                OIDCAttributeMapperHelper.mapClaim(token, mappingModel, attributeName, org.getId());
+                if(org.isEnabled()) {
+                    //Add organization ID that this user is associated with
+                    String attributeName = String.format(ORGANIZATION_ATTRIBUTE_URI_FORMAT, attributePrefix, org.getName(), ORGANIZATION_ATTRIBUTE_ID);
+                    OIDCAttributeMapperHelper.mapClaim(token, mappingModel, attributeName, org.getId());
 
-                //Add any additional attributes from this organization
-                for (Map.Entry<String, String> attribute : org.getAttributes().entrySet()) {
-                    attributeName = String.format(ORGANIZATION_ATTRIBUTE_URI_FORMAT, attributePrefix, org.getName(), attribute.getKey());
-                    OIDCAttributeMapperHelper.mapClaim(token, mappingModel, attributeName, attribute.getValue());
+                    //Add any additional attributes from this organization
+                    for (Map.Entry<String, String> attribute : org.getAttributes().entrySet()) {
+                        attributeName = String.format(ORGANIZATION_ATTRIBUTE_URI_FORMAT, attributePrefix, org.getName(), attribute.getKey());
+                        OIDCAttributeMapperHelper.mapClaim(token, mappingModel, attributeName, attribute.getValue());
+                    }
+                }
+                else {
+                    logger.debugf("Skipping organization %s as it is currently disabled", org.getName());
                 }
             }
         }

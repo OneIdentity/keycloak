@@ -1,5 +1,6 @@
 package org.keycloak.protocol.saml.mappers;
 
+import org.jboss.logging.Logger;
 import org.keycloak.models.ClientSessionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
@@ -28,6 +29,7 @@ import java.util.HashSet;
  * @version $Revision: 1 $
  */
 public class RoleListMapper extends AbstractSAMLProtocolMapper implements SAMLRoleListMapper {
+    protected static final Logger logger = Logger.getLogger(RoleListMapper.class);
     public static final String PROVIDER_ID = "saml-role-list-mapper";
     public static final String SINGLE_ROLE_ATTRIBUTE = "single";
 
@@ -135,8 +137,13 @@ public class RoleListMapper extends AbstractSAMLProtocolMapper implements SAMLRo
 
         //Add organization roles
         for (OrganizationModel organizationModel : userSession.getUser().getOrganizations()) {
-            for(RoleModel roleModel : organizationModel.getRoleMappings()) {
-                roles.addAll(getComposites(roleModel, roleNameMappers));
+            if(organizationModel.isEnabled()) {
+                for (RoleModel roleModel : organizationModel.getRoleMappings()) {
+                    roles.addAll(getComposites(roleModel, roleNameMappers));
+                }
+            }
+            else {
+                logger.debugf("Skipping organization %s as it is currently disabled", organizationModel.getName());
             }
         }
 

@@ -233,7 +233,12 @@ public class TokenManager {
 
         //Add associated organization role mappings
         for(OrganizationModel organization : user.getOrganizations()) {
-            roleMappings.addAll(organization.getRoleMappings());
+            if(organization.isEnabled()) {
+                roleMappings.addAll(organization.getRoleMappings());
+            }
+            else {
+                logger.debugf("Skipping organization %s as it is currently disabled", organization.getName());
+            }
         }
 
         if (client.isFullScopeAllowed()) return roleMappings;

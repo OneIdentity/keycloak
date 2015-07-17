@@ -263,7 +263,7 @@ public class OrganizationResource {
         UserModel user = session.users().getUserByUsername(username, realm);
 
         if (user == null || !user.hasOrganization(organizationModel)) {
-            throw new NotFoundException("Client not found");
+            throw new NotFoundException("User not found");
         }
 
         return ModelToRepresentation.toRepresentation(user);
@@ -279,7 +279,7 @@ public class OrganizationResource {
         UserModel user = session.users().getUserByUsername(username, realm);
 
         if (user == null) {
-            throw new NotFoundException("Client not found");
+            throw new NotFoundException("User not found");
         }
 
         user.addOrganization(organizationModel);
@@ -297,7 +297,7 @@ public class OrganizationResource {
         UserModel user = session.users().getUserByUsername(username, realm);
 
         if (user == null) {
-            throw new NotFoundException("Client not found");
+            throw new NotFoundException("User not found");
         }
 
         user.removeOrganization(organizationModel);
