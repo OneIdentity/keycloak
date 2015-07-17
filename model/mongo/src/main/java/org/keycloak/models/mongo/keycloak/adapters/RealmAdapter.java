@@ -880,6 +880,10 @@ public class RealmAdapter extends AbstractMongoAdapter<MongoRealmEntity> impleme
 
     @Override
     public void addOrganization(OrganizationModel organization) {
+        if (getOrganizationByName(organization.getName()) != null) {
+            throw new ModelDuplicateException("Organization name must be unique per realm. There is already: " + organization.getName());
+        }
+
         OrganizationEntity entity = OrganizationEntity.fromModel(organization);
         entity.setId(KeycloakModelUtils.generateId());
 
