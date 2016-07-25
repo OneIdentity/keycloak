@@ -99,7 +99,11 @@ public class RealmsAdminResource {
         if (auth.getRealm().equals(realmManager.getKeycloakAdminstrationRealm())) {
             List<RealmModel> realms = session.realms().getRealms();
             for (RealmModel realm : realms) {
-                addRealmRep(reps, realm, realm.getMasterAdminClient());
+                try {
+                    addRealmRep(reps, realm, realm.getMasterAdminClient());
+                } catch (ForbiddenException ex) {
+                    logger.errorf("Access to realm %s is forbidden for user %s", realm.getName(), auth.getUser().getUsername());
+                }
             }
         } else {
             ClientModel adminApp = auth.getRealm().getClientByClientId(realmManager.getRealmAdminClientId(auth.getRealm()));
