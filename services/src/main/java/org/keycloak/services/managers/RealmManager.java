@@ -290,6 +290,8 @@ public class RealmManager implements RealmImporter {
             adminRealm = realm;
 
             adminRole = realm.addRole(AdminRoles.ADMIN);
+            adminRole.setDescription("${role_"+AdminRoles.ADMIN+"}");
+            adminRole.setScopeParamRequired(false);
 
             RoleModel createRealmRole = realm.addRole(AdminRoles.CREATE_REALM);
             adminRole.addCompositeRole(createRealmRole);
@@ -299,8 +301,6 @@ public class RealmManager implements RealmImporter {
             adminRealm = model.getRealm(Config.getAdminRealm());
             adminRole = adminRealm.getRole(AdminRoles.ADMIN);
         }
-        adminRole.setDescription("${role_"+AdminRoles.ADMIN+"}");
-        adminRole.setScopeParamRequired(false);
 
         ClientModel realmAdminApp = KeycloakModelUtils.createClient(adminRealm, KeycloakModelUtils.getMasterRealmAdminApplicationClientId(realm.getName()));
         // No localized name for now
