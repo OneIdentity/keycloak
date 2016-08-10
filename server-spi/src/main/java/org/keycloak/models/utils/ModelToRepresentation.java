@@ -229,7 +229,11 @@ public class ModelToRepresentation {
         rep.setDisplayNameHtml(realm.getDisplayNameHtml());
         rep.setEnabled(realm.isEnabled());
         rep.setNotBefore(realm.getNotBefore());
-        rep.setSslRequired(realm.getSslRequired().name().toLowerCase());
+
+        if(realm.getSslRequired() != null) {
+            rep.setSslRequired(realm.getSslRequired().name().toLowerCase());
+        }
+
         rep.setPublicKey(realm.getPublicKeyPem());
         if (internal) {
             rep.setPrivateKey(realm.getPrivateKeyPem());
