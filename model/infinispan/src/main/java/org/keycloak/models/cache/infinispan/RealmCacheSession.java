@@ -210,6 +210,11 @@ public class RealmCacheSession implements CacheRealmProvider {
         invalidations.addAll(newInvalidations);
         // need to make sure that scope and group mapping clients and groups are invalidated
         for (String id : newInvalidations) {
+            RoleAdapter role = managedRoles.get(id);
+            if (role != null) {
+                role.invalidate();
+                continue;
+            }
             ClientAdapter adapter = managedApplications.get(id);
             if (adapter != null) {
                 adapter.invalidate();
