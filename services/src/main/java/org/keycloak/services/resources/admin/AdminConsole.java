@@ -236,6 +236,8 @@ public class AdminConsole {
         List<RealmModel> realms = session.realms().getRealms();
         for (RealmModel realm : realms) {
             ClientModel realmAdminApp = realm.getMasterAdminClient();
+            if(realmAdminApp == null) continue; //Realm has been created but realm admin client hasn't yet.
+
             Set<RoleModel> roles = realmAdminApp.getRoles();
             for (RoleModel role : roles) {
                 if (!user.hasRole(role)) continue;
