@@ -9,6 +9,17 @@ module.controller('GlobalCtrl', function($scope, $http, Auth, Current, $location
             return false;
         }
 
+        //Check for global admin role
+        if(Auth.user.realm.localeCompare('master') == 0) {
+            var realmAccess = Auth.authz.tokenParsed['realm_access'];
+            if(realmAccess) {
+                var i = realmAccess.roles.indexOf('global-admin');
+                if(i >= 0) {
+                    return true;
+                }
+            }
+        }
+
         var realmAccess = Auth.user && Auth.user['realm_access'];
         if (realmAccess) {
             realmAccess = realmAccess[Current.realm.realm];

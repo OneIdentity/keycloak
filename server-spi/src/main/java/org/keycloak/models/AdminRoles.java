@@ -25,6 +25,8 @@ public class AdminRoles {
     public static String APP_SUFFIX = "-realm";
 
     public static String ADMIN = "admin";
+    public static String GLOBAL_ADMIN = "global-admin";
+
 
     // for admin client local to each realm
     public static String REALM_ADMIN = "realm-admin";
