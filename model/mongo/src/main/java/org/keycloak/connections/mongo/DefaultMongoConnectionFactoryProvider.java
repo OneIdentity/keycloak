@@ -256,7 +256,11 @@ public class DefaultMongoConnectionFactoryProvider implements MongoConnectionPro
 
         String uriString = config.get("uri");
         if (uriString != null) {
-            MongoClientURI uri = new MongoClientURI(uriString);
+            //Allow setting client options not in the uri
+            //This is mostly to fix an issue with the SSLSocketFactory the MongoDB client uses by default.
+            //For some reason it connects by IP which breaks most SSL trust checking. So this allows us to specify
+            //SSLSocketFactory.getDefault() below which works fine.
+            MongoClientURI uri = new MongoClientURI(uriString, getClientOptionsBuilder());
             MongoClient client = new MongoClient(uri);
 
             StringBuilder hostsBuilder = new StringBuilder();
@@ -300,7 +304,7 @@ public class DefaultMongoConnectionFactoryProvider implements MongoConnectionPro
         }
     }
 
-    protected MongoClientOptions getClientOptions() {
+    protected MongoClientOptions.Builder getClientOptionsBuilder() {
         MongoClientOptions.Builder builder = MongoClientOptions.builder();
         checkIntOption("connectionsPerHost", builder);
         checkIntOption("threadsAllowedToBlockForConnectionMultiplier", builder);
@@ -309,11 +313,16 @@ public class DefaultMongoConnectionFactoryProvider implements MongoConnectionPro
         checkIntOption("socketTimeout", builder);
         checkBooleanOption("socketKeepAlive", builder);
         checkBooleanOption("autoConnectRetry", builder);
+        checkBooleanOption("sslInvalidHostNameAllowed", builder);
         if(config.getBoolean("ssl", false)) {
             builder.socketFactory(SSLSocketFactory.getDefault());
         }
 
-        return builder.build();
+        return builder;
+    }
+
+    protected MongoClientOptions getClientOptions() {
+        return getClientOptionsBuilder().build();
     }
 
     protected void checkBooleanOption(String optionName, MongoClientOptions.Builder builder) {
