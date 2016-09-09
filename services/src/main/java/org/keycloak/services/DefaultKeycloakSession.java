@@ -108,9 +108,9 @@ public class DefaultKeycloakSession implements KeycloakSession {
 
     @Override
     public UserFederatedStorageProvider userFederatedStorage() {
-        if (userFederatedStorageProvider == null) {
-            userFederatedStorageProvider = getProvider(UserFederatedStorageProvider.class);
-        }
+        //if (userFederatedStorageProvider == null) {
+        //    userFederatedStorageProvider = getProvider(UserFederatedStorageProvider.class);
+        //}
         return userFederatedStorageProvider;
     }
 
