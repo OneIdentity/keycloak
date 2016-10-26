@@ -143,7 +143,6 @@ public class CachedRealm extends AbstractRevisioned {
     }
 
     protected List<String> defaultGroups = new LinkedList<String>();
-    protected Set<String> groups = new HashSet<String>();
     protected List<String> clientTemplates= new LinkedList<>();
     protected boolean internationalizationEnabled;
     protected Set<String> supportedLocales;
@@ -251,9 +250,6 @@ public class CachedRealm extends AbstractRevisioned {
                 authenticationExecutions.add(flow.getId(), execution);
                 executionsById.put(execution.getId(), execution);
             }
-        }
-        for (GroupModel group : model.getGroups()) {
-            groups.add(group.getId());
         }
         for (AuthenticatorConfigModel authenticator : model.getAuthenticatorConfigs()) {
             authenticatorConfigs.put(authenticator.getId(), authenticator);
@@ -566,10 +562,6 @@ public class CachedRealm extends AbstractRevisioned {
 
     public AuthenticationFlowModel getClientAuthenticationFlow() {
         return clientAuthenticationFlow;
-    }
-
-    public Set<String> getGroups() {
-        return groups;
     }
 
     public List<String> getDefaultGroups() {
