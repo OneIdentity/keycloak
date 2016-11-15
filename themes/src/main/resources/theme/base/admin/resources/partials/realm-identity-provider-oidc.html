@@ -189,6 +189,13 @@
                 </div>
                 <kc-tooltip>{{:: 'identity-provider.validating-public-key.tooltip' | translate}}</kc-tooltip>
             </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label" for="clockSkewLeeway">Clock Skew Leeway (Seconds)</label>
+                <div class="col-md-6 time-selector">
+                    <input class="form-control" type="number" min="0" max="31536000" data-ng-model="identityProvider.config.clockSkewLeeway" id="clockSkewLeeway" name="clockSkewLeeway"/>
+                </div>
+                <kc-tooltip>The amount of leeway (in seconds) allowed to account for clock skew issues.</kc-tooltip>
+            </div>
         </fieldset>
         <fieldset data-ng-show="newIdentityProvider">
             <legend uncollapsed><span class="text">{{:: 'import-external-idp-config' | translate}}</span> <kc-tooltip>{{:: 'import-external-idp-config.tooltip' | translate}}</kc-tooltip></legend>
