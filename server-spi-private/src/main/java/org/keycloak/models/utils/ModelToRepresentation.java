@@ -269,7 +269,9 @@ public class ModelToRepresentation {
         rep.setDisplayNameHtml(realm.getDisplayNameHtml());
         rep.setEnabled(realm.isEnabled());
         rep.setNotBefore(realm.getNotBefore());
-        rep.setSslRequired(realm.getSslRequired().name().toLowerCase());
+        if(realm.getSslRequired() != null) {
+            rep.setSslRequired(realm.getSslRequired().name().toLowerCase());
+        }
         rep.setRegistrationAllowed(realm.isRegistrationAllowed());
         rep.setRegistrationEmailAsUsername(realm.isRegistrationEmailAsUsername());
         rep.setRememberMe(realm.isRememberMe());
