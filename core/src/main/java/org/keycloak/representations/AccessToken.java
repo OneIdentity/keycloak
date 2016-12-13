@@ -188,6 +188,10 @@ public class AccessToken extends IDToken {
         return (AccessToken) super.notBefore(notBefore);
     }
 
+    @Override
+    public AccessToken clockSkewLeeway(int clockSkewLeeway) {
+        return (AccessToken) super.clockSkewLeeway(clockSkewLeeway);
+    }
 
     @Override
     public AccessToken issuedAt(int issuedAt) {

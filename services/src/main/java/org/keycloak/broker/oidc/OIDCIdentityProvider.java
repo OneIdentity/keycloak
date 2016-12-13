@@ -334,6 +334,9 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
             throw new IdentityBrokerException("Wrong audience from token.");
         }
 
+        //Account for clock skew issues
+        token.clockSkewLeeway(getClockSkewLeeway());
+
         if (!token.isActive()) {
             throw new IdentityBrokerException("Token is no longer valid");
         }
@@ -368,5 +371,13 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
     @Override
     protected String getDefaultScopes() {
         return "openid";
+    }
+
+    private int getClockSkewLeeway() {
+        try {
+            return Integer.parseInt(getConfig().getConfig().getOrDefault("clockSkewLeeway", "0"));
+        } catch(NumberFormatException nfe) {
+            return 0;
+        }
     }
 }

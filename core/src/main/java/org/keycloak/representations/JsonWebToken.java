@@ -58,6 +58,9 @@ public class JsonWebToken implements Serializable {
     public String issuedFor;
     protected Map<String, Object> otherClaims = new HashMap<>();
 
+    @JsonIgnore
+    private int clockSkewLeeway = 0;
+
     public String getId() {
         return id;
     }
@@ -79,7 +82,7 @@ public class JsonWebToken implements Serializable {
 
     @JsonIgnore
     public boolean isExpired() {
-        return Time.currentTime() > expiration;
+        return Time.currentTime() > expiration + clockSkewLeeway; //Add in a slight amount of time for clock skew issues
     }
 
     public int getNotBefore() {
@@ -94,7 +97,18 @@ public class JsonWebToken implements Serializable {
 
     @JsonIgnore
     public boolean isNotBefore() {
-        return Time.currentTime() >= notBefore;
+        return Time.currentTime() >= notBefore - clockSkewLeeway;
+    }
+
+
+    @JsonIgnore
+    public int getClockSkewLeeway() {
+        return clockSkewLeeway;
+    }
+
+    public JsonWebToken clockSkewLeeway(int clockSkewLeeway) {
+        this.clockSkewLeeway = clockSkewLeeway;
+        return this;
     }
 
     /**

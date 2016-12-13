@@ -772,6 +772,7 @@ module.controller('RealmIdentityProviderCtrl', function($scope, $filter, $upload
 
     if (instance && instance.alias) {
         $scope.identityProvider = angular.copy(instance);
+        $scope.identityProvider.config.clockSkewLeeway = parseInt(instance.config.clockSkewLeeway);
         $scope.newIdentityProvider = false;
         for (var i in serverInfo.identityProviders) {
             var provider = serverInfo.identityProviders[i];
