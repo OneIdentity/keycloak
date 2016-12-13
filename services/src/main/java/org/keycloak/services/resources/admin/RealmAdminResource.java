@@ -330,6 +330,8 @@ public class RealmAdminResource {
     public void deleteRealm() {
         auth.requireManage();
 
+        logger.debugv("deleteRealm: {0}", realm.getName());
+
         if (!new RealmManager(session).removeRealm(realm)) {
             throw new NotFoundException("Realm doesn't exist");
         }
