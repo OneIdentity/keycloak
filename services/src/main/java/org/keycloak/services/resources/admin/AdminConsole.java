@@ -240,6 +240,14 @@ public class AdminConsole {
     }
 
     private void addMasterRealmAccess(RealmModel masterRealm, UserModel user, Map<String, Set<String>> realmAdminAccess) {
+        RoleModel roleModel = masterRealm.getRole(AdminRoles.GLOBAL_ADMIN);
+        if (roleModel != null) {
+            //If the user has a global-admin role already we can bypass this
+            if(user.hasRole(roleModel)) {
+                return;
+            }
+        }
+
         List<RealmModel> realms = session.realms().getRealms();
         for (RealmModel realm : realms) {
             ClientModel realmAdminApp = realm.getMasterAdminClient();
