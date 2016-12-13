@@ -316,8 +316,10 @@ public class MongoStoreImpl implements MongoStore {
                 logger.debugf("Removed %d entities of type: %s, query: %s", foundObjects.size(), type, query);
 
                 for (MongoIdentifiableEntity found : foundObjects) {
-                    context.addRemovedEntity(found);;
+                    context.addRemovedEntity(found);
                 }
+                //Commit here or the last remove gets delayed
+                context.commit();
                 return foundObjects.size();
             }
         } else {
@@ -334,7 +336,7 @@ public class MongoStoreImpl implements MongoStore {
     }
 
     @Override
-    public <S> boolean pushItemToList(final MongoIdentifiableEntity entity, final String listPropertyName, S itemToPush, boolean skipIfAlreadyPresent, MongoStoreInvocationContext context) {
+    public <S> boolean pushItemToList(final MongoIdentifiableEntity entity, final String listPropertyName, final S itemToPush, boolean skipIfAlreadyPresent, MongoStoreInvocationContext context) {
         final Class<? extends MongoEntity> type = entity.getClass();
         EntityInfo entityInfo = getEntityInfo(type);
 
@@ -359,18 +361,15 @@ public class MongoStoreImpl implements MongoStore {
         list.add(itemToPush);
 
         // Add update of list to pending tasks
-        final List<S> listt = list;
         context.addUpdateTask(entity, new MongoTask() {
 
             @Override
             public void execute() {
-                // Now DB update of new list with usage of $set
-                BasicDBList dbList = mapperRegistry.convertApplicationObjectToDBObject(listt, BasicDBList.class);
-
+                Object dbItemToPush = mapperRegistry.convertApplicationObjectToDBObject(itemToPush, Object.class);
                 BasicDBObject query = new BasicDBObject("_id", entity.getId());
-                BasicDBObject listObject = new BasicDBObject(listPropertyName, dbList);
-                BasicDBObject setCommand = new BasicDBObject("$set", listObject);
-                getDBCollectionForType(type).update(query, setCommand);
+                BasicDBObject pushObject = new BasicDBObject(listPropertyName, dbItemToPush);
+                BasicDBObject pushCommand = new BasicDBObject("$addToSet", pushObject);
+                getDBCollectionForType(type).update(query, pushCommand);
             }
 
             @Override
