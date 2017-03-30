@@ -156,7 +156,7 @@ public class WelcomeResource {
      * @return
      */
     @GET
-    @Path("/welcome-content/{path}")
+    @Path("/welcome-content/{path:.*}")
     @Produces(MediaType.TEXT_HTML_UTF_8)
     public Response getResource(@PathParam("path") String path) {
         try {
