@@ -95,13 +95,13 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
         em.flush();
         UserAdapter userModel = new UserAdapter(session, realm, em, entity);
 
-        if (addDefaultRoles) {
+        /*if (addDefaultRoles) {
             DefaultRoles.addDefaultRoles(realm, userModel);
 
             for (GroupModel g : realm.getDefaultGroups()) {
                 userModel.joinGroupImpl(g); // No need to check if user has group as it's new user
             }
-        }
+        }*/
 
         if (addDefaultRequiredActions){
             for (RequiredActionProviderModel r : realm.getRequiredActionProviders()) {
