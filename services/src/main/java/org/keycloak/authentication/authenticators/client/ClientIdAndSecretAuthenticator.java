@@ -78,7 +78,10 @@ public class ClientIdAndSecretAuthenticator extends AbstractClientAuthenticator 
             }
         }
 
-        if (formData != null) {
+        // TODO: Temporary workaround to support legacy clients that send incorrect requests
+        // In 2.4.0.Final Keycloak would only check the form data for client id/secret if it didn't get it from the authorization header.
+        if (formData != null && client_id == null) {
+
             // even if basic challenge response exist, we check if client id was explicitly set in the request as a form param,
             // so we can also support clients overriding flows and using challenges (e.g: basic) to authenticate their users
             if (formData.containsKey(OAuth2Constants.CLIENT_ID)) {
