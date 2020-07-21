@@ -35,11 +35,24 @@ public class DefaultRoles {
             set.add(realm.getRole(r));
         }
 
-        for (ClientModel application : realm.getClients()) {
+        // TODO: https://issues.redhat.com/browse/KEYCLOAK-14846
+        // getClients() returns all clients for the realm. So performance get's worse as you add clients
+        // this really should only get the clients that are assigned for default roles so we iterate through a much
+        // smaller list
+        /*for (ClientModel application : realm.getClients()) {
+            for (String r : application.getDefaultRoles()) {
+                set.add(application.getRole(r));
+            }
+        }*/
+
+        // account still contains default roles we want to assign to users
+        ClientModel application = realm.getClientByClientId("account");
+        if(application != null) {
             for (String r : application.getDefaultRoles()) {
                 set.add(application.getRole(r));
             }
         }
+
         return set;
 
     }
